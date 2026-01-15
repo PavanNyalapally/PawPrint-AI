@@ -1,0 +1,34 @@
+{
+  "flask": {
+    "host": "127.0.0.1",
+    "port": 5000,
+    "debug": false,
+    "threaded": true
+  },
+  "upload": {
+    "max_file_size_mb": 10,
+    "allowed_extensions": ["jpg", "jpeg", "png"],
+    "upload_folder": "uploads"
+  },
+  "security": {
+    "enable_cors": true,
+    "request_timeout_seconds": 60,
+    "rate_limit_requests": 100,
+    "rate_limit_window_seconds": 3600,
+    "max_content_length_mb": 50
+  },
+  "model": {
+    "keras_model_path": "model/footprint_cnn_final.keras",
+    "h5_model_path": "model/footprint_cnn.h5",
+    "class_indices_path": "model/class_indices.json"
+  },
+  "logging": {
+    "level": "INFO",
+    "log_file": "logs/app.log",
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  },
+  "api": {
+    "version": "1.0",
+    "name": "PawPrintAI Animal Classifier"
+  }
+}

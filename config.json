@@ -1,0 +1,47 @@
+{
+  "training": {
+    "seed": 42,
+    "image_size": [224, 224],
+    "batch_size": 32,
+    "epochs": 30,
+    "fine_tune_epochs": 20,
+    "learning_rate": 1e-4,
+    "fine_tune_learning_rate_factor": 20,
+    "label_smoothing": 0.1,
+    "mixed_precision": true
+  },
+  "data": {
+    "train_dir": "dataset/classification/train",
+    "val_dir": "dataset/classification/val",
+    "test_dir": "dataset/classification/test",
+    "model_dir": "backend/model"
+  },
+  "augmentation": {
+    "rotation_range": 25,
+    "width_shift_range": 0.2,
+    "height_shift_range": 0.2,
+    "zoom_range": 0.25,
+    "horizontal_flip": true,
+    "vertical_flip": true,
+    "shear_range": 0.15,
+    "fill_mode": "reflect"
+  },
+  "model": {
+    "base_model": "EfficientNetV2S",
+    "include_top": false,
+    "weights": "imagenet",
+    "dense_units": 256,
+    "dropout_rate": 0.5
+  },
+  "callbacks": {
+    "early_stopping_patience": 6,
+    "reduce_lr_patience": 3,
+    "reduce_lr_factor": 0.5,
+    "min_lr": 1e-7,
+    "fine_tune_layers": 50
+  },
+  "validation": {
+    "min_images_per_class": 10,
+    "supported_formats": [".jpg", ".jpeg", ".png", ".gif", ".bmp"]
+  }
+}

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>PawPrint AI | Animal Footprint Identification</title>
+
+    <meta name="description"
+        content="PawPrint AI identifies animal species from footprint images and estimates age, wildness, and human risk using deep learning." />
+
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <!-- HISTORY SIDEBAR -->
+    <aside class="history-sidebar" id="historySidebar">
+        <div class="sidebar-header">
+            <h3>Recent Scans</h3>
+            <button class="close-sidebar" onclick="toggleHistory()">✕</button>
+        </div>
+        <div id="historyList" class="history-list">
+            <!-- Items injected by JS -->
+            <div class="history-empty">No scans yet.</div>
+        </div>
+    </aside>
+
+    <div class="app-wrapper">
+        <div class="container">
+
+            <!-- HEADER -->
+            <header class="header">
+                <div class="header-row">
+                    <h1>PawPrint AI</h1>
+                    <nav class="nav">
+                        <a href="#" class="nav-link" onclick="toggleHistory()">History</a>
+                        <a href="#" class="nav-link" onclick="openHowModal(event)">How it works</a>
+                    </nav>
+                </div>
+                <p class="subtitle">
+                    Upload a clear footprint image to identify the animal, estimate age, and assess wildness.
+                </p>
+            </header>
+
+            <!-- HOW IT WORKS MODAL -->
+            <div id="howModal" class="modal" role="dialog" aria-modal="true" aria-hidden="true" style="display:none;">
+                <div class="modal-content">
+                    <button class="modal-close" aria-label="Close" onclick="closeHowModal()">✕</button>
+                    <h3>How PawPrint AI Works</h3>
+                    <ol class="how-list">
+                        <li>Upload a clear footprint photo (JPG / PNG).</li>
+                        <li>Our EfficientNetV2 model classifies the species.</li>
+                        <li>OpenCV estimates footprint area to infer age group.</li>
+                        <li>We map species to wildness and human risk levels.</li>
+                    </ol>
+                    <p class="muted">Tip: crop the image so the footprint fills most of the frame for best results.</p>
+                </div>
+            </div>
+
+            <!-- UPLOAD SECTION -->
+            <section class="upload-section">
+                <label class="upload-box" for="imageInput" ondragover="event.preventDefault()"
+                    ondrop="handleDrop(event)" tabindex="0" aria-label="Upload footprint image">
+                    <input type="file" id="imageInput" accept="image/*" onchange="previewImage(event)" hidden />
+                    <div class="upload-inner">
+                        <span class="upload-icon">🐾</span>
+                        <div>
+                            <strong class="upload-text">Click or drop a footprint image</strong>
+                            <div class="upload-hint">JPG / PNG • Focused footprint gives best results</div>
+                        </div>
+                    </div>
+                </label>
+
+                <div class="image-preview" id="imagePreviewContainer">
+                    <img id="preview" alt="Footprint preview" />
+                    <img id="debugPreview" alt="Analysis preview" style="display:none;" />
+                </div>
+
+                <div class="toggle-container" id="viewToggle" style="display:none;">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="debugToggle" onchange="toggleDebugView()">
+                        <span class="slider round"></span>
+                    </label>
+                    <span class="toggle-label">Show Analysis View</span>
+                </div>
+
+                <button id="predictBtn" type="button" onclick="uploadImage()" disabled>
+                    Analyze Footprint
+                </button>
+            </section>
+
+            <!-- LOADER -->
+            <div id="loader" class="loader-overlay" style="display: none;">
+                <div class="loader-card">
+                    <div class="spinner"></div>
+                    <div class="loader-text" id="loaderText">Analyzing footprint…</div>
+                </div>
+            </div>
+
+            <!-- RESULT -->
+            <section id="result" class="result-card" style="display: none;">
+                <h2>Analysis Result</h2>
+
+                <div class="result-main" id="animalName">Unknown</div>
+
+                <div class="confidence-bar-bg">
+                    <div class="confidence-bar-fill" id="confidenceFill"></div>
+                </div>
+
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">Confidence</div>
+                        <div class="detail-value" id="confidenceValue">0%</div>
+                    </div>
+
+                    <div class="detail-item">
+                        <div class="detail-label">Age Group</div>
+                        <div class="detail-value" id="ageValue">-</div>
+                    </div>
+
+                    <div class="detail-item">
+                        <div class="detail-label">Wildness</div>
+                        <div class="detail-value" id="wildnessValue">-</div>
+                    </div>
+
+                    <div class="detail-item">
+                        <div class="detail-label">Human Risk</div>
+                        <div class="detail-value" id="riskValue">-</div>
+                    </div>
+                </div>
+
+                <div class="result-actions">
+                    <button class="secondary-btn" onclick="resetUI()">
+                        Analyze Another Image
+                    </button>
+                    <!-- <button id="downloadBtn" class="link-btn" onclick="downloadReport()" disabled>Download Report</button> -->
+                </div>
+            </section>
+
+            <!-- ERROR -->
+            <div id="error" style="display: none;"></div>
+
+            <!-- FOOTER -->
+            <footer class="footer">
+                © 2025 PawPrint AI · Powered by EfficientNetV2
+            </footer>
+
+        </div>
+    </div>
+
+    <div class="overlay" id="sidebarOverlay" onclick="toggleHistory()"></div>
+
+    <script src="script.js?v=3" defer></script>
+
+</body>
+
+</html>

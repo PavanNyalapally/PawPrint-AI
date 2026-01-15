@@ -1,0 +1,10 @@
+{
+  "python.analysis.pythonPath": "${workspaceFolder}/venv/bin/python",
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}",
+    "${workspaceFolder}/venv/lib/python3.11/site-packages"
+  ],
+  "include": ["${workspaceFolder}"],
+  "exclude": ["**/node_modules", "**/__pycache__", "venv", ".git"],
+  "typeCheckingMode": "basic"
+}

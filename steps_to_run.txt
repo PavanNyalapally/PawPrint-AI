@@ -1,0 +1,293 @@
+
+# =====================================================
+# PawPrintAI - Complete Setup & Execution Guide
+# =====================================================
+
+## PREREQUISITES
+- Python 3.10 or higher
+- pip (Python package manager)
+- macOS/Linux (or Windows with WSL)
+- ~5GB disk space (for dependencies + models)
+
+## =====================================================
+## STEP 1: INITIAL SETUP
+## =====================================================
+
+### 1.1 Clone/Navigate to Project
+cd /Users/nyalapallypavankumar/PawPrintAI
+
+### 1.2 Create Virtual Environment
+python3 -m venv venv
+
+### 1.3 Activate Virtual Environment
+# On macOS/Linux:
+source venv/bin/activate
+
+# On Windows (CMD):
+venv\Scripts\activate.bat
+
+# On Windows (PowerShell):
+venv\Scripts\Activate.ps1
+
+### 1.4 Upgrade pip
+pip install --upgrade pip setuptools wheel
+
+### 1.5 Install Dependencies
+pip install -r requirements.txt
+
+# This installs:
+# - Flask, Flask-CORS, Werkzeug, Gunicorn (Backend)
+# - TensorFlow, Keras, NumPy, scikit-learn (ML)
+# - OpenCV, Pillow, scikit-image (Image Processing)
+# - Pandas, Matplotlib, Seaborn, SciPy (Data Analysis)
+# - And more utilities
+
+## =====================================================
+## STEP 2: PREPARE DATASET
+## =====================================================
+
+### 2.1 Organize Dataset Structure
+# Expected structure:
+# dataset/
+# ├── classification/
+# │   ├── train/
+# │   │   ├── black_bear/
+# │   │   ├── bob_cat/
+# │   │   ├── elephant/
+# │   │   ├── gray_fox/
+# │   │   ├── horse/
+# │   │   └── lion/
+# │   ├── val/
+# │   │   └── (same class folders)
+# │   └── test/
+# │       └── (same class folders)
+# └── raw/
+#     └── (original images)
+
+### 2.2 Verify Dataset
+# - Training samples: ~1,325 images
+# - Validation samples: ~108 images
+# - Test samples: ~190 images
+# - Classes: 6 animals
+
+### 2.3 (Optional) Augment Elephant Dataset
+# Elephant class has limited data. Run augmentation:
+python scripts/elephant_targeted_aug.py
+python scripts/augment_oversample.py
+
+## =====================================================
+## STEP 3: TRAIN THE MODEL
+## =====================================================
+
+### 3.1 Configure Training (Optional)
+# Edit config.json to customize:
+# - image_size, batch_size, epochs
+# - learning_rate, label_smoothing
+# - augmentation parameters
+# - model architecture settings
+
+### 3.2 Run Training Script
+python train_model.py
+
+# This will:
+# ✅ Validate datasets
+# ✅ Set random seeds for reproducibility
+# ✅ Build EfficientNetV2-S model
+# ✅ Phase 1: Train classifier head (30 epochs)
+# ✅ Phase 2: Fine-tune base model (20 epochs)
+# ✅ Evaluate on test set
+# ✅ Save model, metrics, training history
+# ✅ Log all outputs with timestamps
+
+### 3.3 Monitor Training
+# View TensorBoard logs (optional):
+tensorboard --logdir=backend/model/logs_<TIMESTAMP>
+
+# Outputs saved to backend/model/:
+# - footprint_cnn_final.keras (final model)
+# - best_model_<TIMESTAMP>.keras (best checkpoint)
+# - metrics_<TIMESTAMP>.json (test results)
+# - training_history_<TIMESTAMP>.json (training curves)
+# - training_metadata_<TIMESTAMP>.json (config + results)
+# - class_indices.json (class mappings)
+
+## =====================================================
+## STEP 4: RUN THE BACKEND API
+## =====================================================
+
+### 4.1 Check API Configuration
+# Review backend/app_config.json for:
+# - host, port, debug mode
+# - file size limits, security settings
+# - model paths, logging config
+
+### 4.2 Start Flask API Server
+cd backend
+python app.py
+
+# OR with Gunicorn (production):
+gunicorn -w 4 -b 127.0.0.1:5000 app:app
+
+# Server will start at:
+# http://127.0.0.1:5000
+
+### 4.3 API Endpoints Available
+# GET  /health              - Health check
+# POST /predict             - Animal classification
+# GET  /                     - Frontend UI
+
+### 4.4 Test Health Endpoint
+curl http://127.0.0.1:5000/health
+
+# Expected response:
+# {
+#   "status": "healthy",
+#   "model_loaded": true,
+#   "classes": 6,
+#   "version": "1.0"
+# }
+
+### 4.5 Test Prediction Endpoint
+curl -X POST -F "file=@path/to/paw_print.jpg" \
+  http://127.0.0.1:5000/predict
+
+# Expected response:
+# {
+#   "animal": "lion",
+#   "confidence": 85.23,
+#   "wildness_level": "high",
+#   "human_risk_level": "high",
+#   "estimated_age_group": "adult"
+# }
+
+## =====================================================
+## STEP 5: RUN THE FRONTEND
+## =====================================================
+
+### 5.1 Frontend Access
+# The frontend is automatically served by Flask
+# Open in browser: http://127.0.0.1:5000
+
+### 5.2 Alternative: Serve Frontend Separately
+# If needed, serve with live reload:
+cd frontend
+python -m http.server 8000
+
+# Then access: http://127.0.0.1:8000
+
+## =====================================================
+## STEP 6: DEACTIVATE ENVIRONMENT
+## =====================================================
+
+### 6.1 When Done
+deactivate
+
+## =====================================================
+## TROUBLESHOOTING
+## =====================================================
+
+### Issue: "venv not found"
+Solution: Recreate virtual environment
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+### Issue: "No module named tensorflow"
+Solution: Install missing dependencies
+pip install tensorflow keras numpy
+
+### Issue: "Dataset validation failed"
+Solution: Check dataset structure
+# Ensure dataset/classification/{train,val,test}/*/
+# Contains images (jpg, jpeg, png)
+
+### Issue: "Model not loading"
+Solution: Check model file exists
+ls -lah backend/model/footprint_cnn_final.keras
+
+### Issue: "Port 5000 already in use"
+Solution: Use different port in app_config.json
+# Or kill process on port 5000:
+lsof -ti:5000 | xargs kill -9
+
+### Issue: "Out of memory during training"
+Solution: Reduce batch size in config.json
+# Change: "batch_size": 32 → "batch_size": 16
+
+### Issue: "Slow inference"
+Solution: Use smaller image size in config.json
+# Change: "image_size": [224, 224] → [192, 192]
+
+## =====================================================
+## USEFUL COMMANDS
+## =====================================================
+
+# Check Python version
+python --version
+
+# List installed packages
+pip list
+
+# Update specific package
+pip install --upgrade tensorflow
+
+# Check GPU availability
+python -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
+
+# View training logs
+cat backend/model/training_metadata_*.json
+
+# View test metrics
+cat backend/model/metrics_*.json | python -m json.tool
+
+# Clean up old training artifacts
+rm -rf backend/model/logs_*
+
+# Clear cache
+find . -type d -name __pycache__ -exec rm -r {} +
+find . -type f -name "*.pyc" -delete
+
+## =====================================================
+## FILE STRUCTURE
+## =====================================================
+
+PawPrintAI/
+├── train_model.py              # Training script
+├── config.json                 # Training config
+├── app_config.json             # API config
+├── requirements.txt            # Dependencies
+├── steps_to_run.txt            # This file
+├── README.md                   # Project docs
+├── backend/
+│   ├── app.py                 # Flask API
+│   ├── model/                 # Trained models
+│   ├── utils/                 # Helper functions
+│   └── uploads/               # Temp files
+├── frontend/
+│   ├── index.html
+│   ├── script.js
+│   └── style.css
+├── dataset/
+│   ├── classification/        # Organized data
+│   ├── raw/                   # Original data
+│   └── annotations/           # Metadata
+└── scripts/
+    ├── augment_oversample.py
+    └── elephant_targeted_aug.py
+
+## =====================================================
+## NEXT STEPS
+## =====================================================
+
+1. ✅ Setup virtual environment (Step 1)
+2. ✅ Prepare dataset (Step 2)
+3. ✅ Train model (Step 3)
+4. ✅ Run API server (Step 4)
+5. ✅ Test endpoints
+6. ✅ Deploy to production
+
+For issues or questions, check README.md or logs in backend/
+
+## =====================================================
+## LAST UPDATED: January 15, 2026
+## =====================================================
